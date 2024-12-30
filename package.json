@@ -22,8 +22,11 @@
     "typescript": "^5.5.3"
   },
   "dependencies": {
+    "cassandra-driver": "^4.7.2",
     "cors": "^2.8.5",
     "dotenv": "^16.4.5",
-    "express": "^4.19.2"
+    "express": "^4.19.2",
+    "uuid": "^11.0.3",
+    "zod": "^3.24.1"
   }
 }
