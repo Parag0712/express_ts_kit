@@ -1,0 +1,939 @@
+generator client {
+  provider = "prisma-client-js"
+  output   = "../generated/prisma"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model addons {
+  id                 BigInt    @id @default(autoincrement()) @db.UnsignedBigInt
+  uuid               String    @db.Char(50)
+  category           String    @db.VarChar(128)
+  name               String    @db.VarChar(255)
+  logo               String    @db.VarChar(128)
+  description        String?   @db.Text
+  metadata           String?   @db.Text
+  license            String?   @db.VarChar(255)
+  version            String?   @db.VarChar(128)
+  is_plan_restricted Boolean   @default(false)
+  update_available   Boolean   @default(false)
+  status             Int       @default(0) @db.TinyInt
+  is_active          Boolean   @default(false)
+  created_at         DateTime? @db.Timestamp(0)
+  updated_at         DateTime? @db.Timestamp(0)
+}
+
+model auto_replies {
+  id              BigInt    @id @default(autoincrement()) @db.UnsignedBigInt
+  uuid            String    @unique(map: "auto_replies_uuid_unique") @db.Char(50)
+  organization_id Int
+  name            String    @db.VarChar(128)
+  trigger         String    @db.Text
+  match_criteria  String    @db.VarChar(100)
+  metadata        String    @db.Text
+  created_by      Int
+  deleted_by      Int?
+  deleted_at      DateTime? @db.Timestamp(0)
+  created_at      DateTime? @db.Timestamp(0)
+  updated_at      DateTime? @db.Timestamp(0)
+}
+
+model billing_credits {
+  id              BigInt  @id @default(autoincrement()) @db.UnsignedBigInt
+  uuid            String  @unique(map: "billing_credits_uuid_unique") @db.Char(50)
+  organization_id Int
+  description     String  @db.Text
+  amount          Decimal @db.Decimal(19, 4)
+}
+
+model billing_debits {
+  id              BigInt  @id @default(autoincrement()) @db.UnsignedBigInt
+  uuid            String  @unique(map: "billing_debits_uuid_unique") @db.Char(50)
+  organization_id Int
+  description     String  @db.Text
+  amount          Decimal @db.Decimal(19, 4)
+}
+
+model billing_invoices {
+  id              BigInt                    @id @default(autoincrement()) @db.UnsignedBigInt
+  uuid            String                    @unique(map: "billing_invoices_uuid_unique") @db.Char(50)
+  organization_id Int
+  plan_id         Int
+  subtotal        Decimal                   @db.Decimal(19, 4)
+  coupon_id       Int?
+  coupon_amount   Decimal?                  @default(0.00) @db.Decimal(23, 2)
+  tax             Decimal                   @default(0.0000000000) @db.Decimal(23, 10)
+  tax_type        billing_invoices_tax_type
+  total           Decimal                   @db.Decimal(19, 4)
+}
+
+model billing_items {
+  id         BigInt  @id @default(autoincrement()) @db.UnsignedBigInt
+  billing_id Int
+  name       String  @db.VarChar(255)
+  interval   Int
+  amount     Decimal @db.Decimal(19, 4)
+}
+
+model billing_payments {
+  id              BigInt  @id @default(autoincrement()) @db.UnsignedBigInt
+  uuid            String  @unique(map: "billing_payments_uuid_unique") @db.Char(50)
+  organization_id Int
+  processor       String  @db.VarChar(255)
+  details         String? @db.Text
+  amount          Decimal @db.Decimal(19, 4)
+}
+
+model billing_tax_rates {
+  id         BigInt  @id @default(autoincrement()) @db.UnsignedBigInt
+  uuid       String  @unique(map: "billing_tax_rates_uuid_unique") @db.Char(50)
+  invoice_id Int
+  rate       Decimal @db.Decimal(19, 4)
+  amount     Decimal @db.Decimal(19, 4)
+}
+
+model billing_transactions {
+  id              BigInt                           @id @default(autoincrement()) @db.UnsignedBigInt
+  uuid            String                           @unique(map: "billing_transactions_uuid_unique") @db.Char(50)
+  organization_id Int
+  entity_type     billing_transactions_entity_type
+  entity_id       Int
+  description     String                           @db.Text
+  amount          Decimal                          @db.Decimal(19, 4)
+  created_by      Int
+  created_at      DateTime?                        @db.Timestamp(0)
+  updated_at      DateTime?                        @db.Timestamp(0)
+}
+
+model blog_authors {
+  id         BigInt    @id @default(autoincrement()) @db.UnsignedBigInt
+  uuid       String    @unique(map: "blog_authors_uuid_unique") @db.VarChar(128)
+  first_name String    @db.VarChar(128)
+  last_name  String    @db.VarChar(128)
+  bio        String?   @db.Text
+  created_by Int
+  deleted    Int       @default(0) @db.TinyInt
+  created_at DateTime? @db.Timestamp(0)
+  updated_at DateTime? @db.Timestamp(0)
+}
+
+model blog_categories {
+  id         BigInt    @id @default(autoincrement()) @db.UnsignedBigInt
+  uuid       String    @unique(map: "blog_categories_uuid_unique") @db.Char(50)
+  name       String    @db.VarChar(255)
+  deleted    Int       @default(0) @db.TinyInt
+  created_by Int
+  created_at DateTime? @db.Timestamp(0)
+  updated_at DateTime? @db.Timestamp(0)
+}
+
+model blog_posts {
+  id           BigInt   @id @default(autoincrement()) @db.UnsignedBigInt
+  uuid         String   @unique(map: "blog_posts_uuid_unique") @db.Char(50)
+  slug         String?  @db.VarChar(255)
+  category_id  Int
+  tags         String?  @db.VarChar(255)
+  title        String   @db.VarChar(255)
+  content      String   @db.Text
+  image        String?  @db.VarChar(255)
+  author_id    Int
+  is_featured  Int      @default(0) @db.TinyInt
+  published    Int      @default(0)
+  deleted      Int      @default(0) @db.TinyInt
+  created_by   Int
+  publish_date DateTime @default(now()) @db.Timestamp(0)
+  updated_at   DateTime @default(now()) @db.Timestamp(0)
+}
+
+model blog_tags {
+  id         BigInt   @id @default(autoincrement()) @db.UnsignedBigInt
+  uuid       String   @unique(map: "blog_tags_uuid_unique") @db.Char(50)
+  name       String   @db.VarChar(255)
+  deleted    Int      @default(0) @db.TinyInt
+  created_by Int
+  created_at DateTime @default(now()) @db.Timestamp(0)
+}
+
+model campaign_logs {
+  id          BigInt               @id @default(autoincrement()) @db.UnsignedBigInt
+  campaign_id Int
+  contact_id  Int
+  chat_id     Int?
+  metadata    String?              @db.Text
+  status      campaign_logs_status
+  created_at  DateTime?            @db.Timestamp(0)
+  updated_at  DateTime?            @db.Timestamp(0)
+}
+
+model campaigns {
+  id               BigInt    @id @default(autoincrement()) @db.UnsignedBigInt
+  uuid             String    @unique(map: "campaigns_uuid_unique") @db.Char(50)
+  organization_id  Int
+  name             String    @db.VarChar(128)
+  template_id      Int
+  contact_group_id Int
+  metadata         String    @db.Text
+  status           String    @default("pending") @db.VarChar(128)
+  scheduled_at     DateTime? @db.DateTime(0)
+  created_by       Int
+  deleted_by       Int?
+  created_at       DateTime  @default(now()) @db.Timestamp(0)
+  deleted_at       DateTime? @db.Timestamp(0)
+}
+
+model chat_logs {
+  id          BigInt    @id @default(autoincrement()) @db.UnsignedBigInt
+  contact_id  Int
+  entity_type String    @db.VarChar(128)
+  entity_id   Int
+  deleted_by  Int?
+  deleted_at  DateTime? @db.Timestamp(0)
+  created_at  DateTime? @db.Timestamp(0)
+  updated_at  DateTime? @db.Timestamp(0)
+}
+
+model chat_media {
+  id         BigInt              @id @default(autoincrement()) @db.UnsignedBigInt
+  name       String              @db.VarChar(255)
+  path       String?             @db.VarChar(255)
+  location   chat_media_location @default(local)
+  type       String?             @db.VarChar(255)
+  size       String              @db.VarChar(128)
+  created_at DateTime            @default(now()) @db.Timestamp(0)
+}
+
+model chat_notes {
+  id         BigInt    @id @default(autoincrement()) @db.UnsignedBigInt
+  uuid       String    @db.Char(50)
+  contact_id BigInt    @db.UnsignedBigInt
+  content    String?   @db.Text
+  created_by Int?
+  deleted_at DateTime? @db.Timestamp(0)
+  deleted_by Int?
+  created_at DateTime? @db.Timestamp(0)
+  updated_at DateTime? @db.Timestamp(0)
+}
+
+model chat_status_logs {
+  id         BigInt    @id @default(autoincrement()) @db.UnsignedBigInt
+  chat_id    Int
+  metadata   String    @db.Text
+  created_at DateTime? @default(now()) @db.Timestamp(0)
+}
+
+model chat_ticket_logs {
+  id          BigInt    @id @default(autoincrement()) @db.UnsignedBigInt
+  contact_id  Int
+  description String?   @db.Text
+  created_at  DateTime? @db.Timestamp(0)
+  updated_at  DateTime? @db.Timestamp(0)
+}
+
+model chat_tickets {
+  id          BigInt    @id @default(autoincrement()) @db.UnsignedBigInt
+  contact_id  Int
+  assigned_to Int?
+  status      String    @db.VarChar(128)
+  created_at  DateTime? @db.Timestamp(0)
+  updated_at  DateTime? @db.Timestamp(0)
+
+  @@index([contact_id], map: "chat_tickets_contact_id_index")
+  @@index([contact_id, assigned_to, status], map: "idx_chat_tickets_contact_assigned_to_status")
+}
+
+model chats {
+  id              BigInt      @id @default(autoincrement()) @db.UnsignedBigInt
+  uuid            String      @unique(map: "chats_uuid_unique") @db.Char(50)
+  organization_id Int
+  wam_id          String?     @db.VarChar(128)
+  contact_id      Int
+  user_id         BigInt?     @db.UnsignedBigInt
+  type            chats_type?
+  metadata        String      @db.Text
+  media_id        Int?
+  status          String      @db.VarChar(128)
+  is_read         Boolean     @default(false)
+  deleted_by      Int?
+  deleted_at      DateTime?   @db.DateTime(0)
+  created_at      DateTime    @default(now()) @db.Timestamp(0)
+
+  @@index([contact_id], map: "chats_contact_id_index")
+  @@index([created_at], map: "chats_created_at_index")
+  @@index([contact_id, organization_id, deleted_at], map: "idx_chats_contact_org_deleted_at")
+}
+
+model chats_archive_2024 {
+  id              BigInt                   @id @default(autoincrement()) @db.UnsignedBigInt
+  uuid            String                   @unique(map: "chats_uuid_unique") @db.Char(50)
+  organization_id Int
+  wam_id          String?                  @db.VarChar(128)
+  contact_id      Int
+  user_id         BigInt?                  @db.UnsignedBigInt
+  type            chats_archive_2024_type?
+  metadata        String                   @db.Text
+  media_id        Int?
+  status          String                   @db.VarChar(128)
+  is_read         Boolean                  @default(false)
+  deleted_by      Int?
+  deleted_at      DateTime?                @db.DateTime(0)
+  created_at      DateTime                 @default(now()) @db.Timestamp(0)
+
+  @@index([contact_id], map: "chats_contact_id_index")
+  @@index([created_at], map: "chats_created_at_index")
+  @@index([contact_id, organization_id, deleted_at], map: "idx_chats_contact_org_deleted_at")
+}
+
+model contact_fields {
+  id              BigInt    @id @default(autoincrement()) @db.UnsignedBigInt
+  organization_id BigInt    @db.UnsignedBigInt
+  uuid            String    @db.Char(50)
+  position        BigInt?   @db.UnsignedBigInt
+  name            String    @db.VarChar(128)
+  type            String    @db.VarChar(128)
+  value           String?   @db.Text
+  required        Int       @db.UnsignedTinyInt
+  deleted_at      DateTime? @db.Timestamp(0)
+  deleted_by      Int?
+  created_at      DateTime? @db.Timestamp(0)
+  updated_at      DateTime? @db.Timestamp(0)
+}
+
+model contact_groups {
+  id              BigInt    @id @default(autoincrement()) @db.UnsignedBigInt
+  uuid            String    @unique(map: "contact_groups_uuid_unique") @db.Char(50)
+  organization_id Int
+  name            String    @db.VarChar(128)
+  created_by      Int
+  created_at      DateTime? @db.Timestamp(0)
+  updated_at      DateTime? @db.Timestamp(0)
+  deleted_at      DateTime? @db.Timestamp(0)
+}
+
+model contacts {
+  id                     BigInt    @id @default(autoincrement()) @db.UnsignedBigInt
+  uuid                   String    @unique(map: "contacts_uuid_unique") @db.Char(50)
+  organization_id        Int
+  first_name             String?   @db.VarChar(128)
+  last_name              String?   @db.VarChar(128)
+  phone                  String?
+  email                  String?   @db.VarChar(128)
+  latest_chat_created_at DateTime? @db.Timestamp(0)
+  avatar                 String?   @db.VarChar(255)
+  address                String?   @db.MediumText
+  metadata               String?   @db.MediumText
+  contact_group_id       Int?
+  is_favorite            Int       @default(0) @db.TinyInt
+  ai_assistance_enabled  Boolean   @default(false)
+  created_by             Int
+  created_at             DateTime? @db.Timestamp(0)
+  updated_at             DateTime? @db.Timestamp(0)
+  deleted_at             DateTime? @db.Timestamp(0)
+
+  @@index([deleted_at], map: "contacts_deleted_at_index")
+  @@index([latest_chat_created_at], map: "contacts_latest_chat_created_at_index")
+  @@index([organization_id], map: "contacts_organization_id_index")
+  @@index([email], map: "idx_contacts_email")
+  @@index([first_name], map: "idx_contacts_first_name")
+  @@index([last_name], map: "idx_contacts_last_name")
+  @@index([phone], map: "idx_contacts_phone")
+  @@fulltext([first_name, last_name, phone, email], map: "first_name")
+}
+
+model coupons {
+  id                BigInt         @id @default(autoincrement()) @db.UnsignedBigInt
+  name              String         @db.VarChar(255)
+  code              String         @unique(map: "coupons_code_unique") @db.VarChar(255)
+  percentage        Decimal?       @db.Decimal(5, 2)
+  quantity          Int?
+  coupon_type       Int?           @default(1)
+  quantity_redeemed Int?
+  status            coupons_status @default(active)
+  created_at        DateTime?      @db.Timestamp(0)
+  updated_at        DateTime?      @db.Timestamp(0)
+  deleted_at        DateTime?      @db.Timestamp(0)
+}
+
+model documents {
+  id              BigInt    @id @default(autoincrement()) @db.UnsignedBigInt
+  uuid            String    @unique(map: "documents_uuid_unique") @db.Char(36)
+  organization_id BigInt    @db.UnsignedBigInt
+  source          String    @db.VarChar(128)
+  title           String?   @db.VarChar(128)
+  content         String?   @db.Text
+  embeddings      String?   @db.LongText
+  status          String    @db.VarChar(128)
+  created_at      DateTime? @db.Timestamp(0)
+  updated_at      DateTime? @db.Timestamp(0)
+}
+
+model email_logs {
+  id         BigInt            @id @default(autoincrement()) @db.UnsignedBigInt
+  uuid       String            @unique(map: "email_logs_uuid_unique") @db.Char(50)
+  user_id    Int?
+  recipient  String            @db.VarChar(255)
+  subject    String            @db.VarChar(255)
+  message    String            @db.Text
+  status     email_logs_status @default(queued)
+  attempts   Int               @default(0)
+  metadata   String?           @db.Text
+  created_at DateTime?         @db.Timestamp(0)
+  updated_at DateTime?         @db.Timestamp(0)
+}
+
+model email_templates {
+  id         BigInt   @id @default(autoincrement()) @db.UnsignedBigInt
+  name       String   @db.VarChar(128)
+  subject    String   @db.VarChar(128)
+  body       Bytes    @db.Blob
+  updated_at DateTime @default(now()) @db.Timestamp(0)
+  updated_by BigInt   @db.UnsignedBigInt
+}
+
+model failed_jobs {
+  id         BigInt   @id @default(autoincrement()) @db.UnsignedBigInt
+  uuid       String   @unique(map: "failed_jobs_uuid_unique") @db.VarChar(255)
+  connection String   @db.Text
+  queue      String   @db.Text
+  payload    String   @db.LongText
+  exception  String   @db.LongText
+  failed_at  DateTime @default(now()) @db.Timestamp(0)
+}
+
+model faqs {
+  id         BigInt    @id @default(autoincrement()) @db.UnsignedBigInt
+  question   String?   @db.Text
+  answer     String?   @db.Text
+  status     Int       @default(0)
+  created_at DateTime? @db.Timestamp(0)
+  updated_at DateTime? @db.Timestamp(0)
+}
+
+model flow_logs {
+  id         BigInt    @id @default(autoincrement()) @db.UnsignedBigInt
+  flow_id    BigInt    @db.UnsignedBigInt
+  chat_id    BigInt    @db.UnsignedBigInt
+  created_at DateTime? @db.Timestamp(0)
+  updated_at DateTime? @db.Timestamp(0)
+  flows      flows     @relation(fields: [flow_id], references: [id], onDelete: Cascade, onUpdate: Restrict, map: "flow_logs_flow_id_foreign")
+
+  @@index([flow_id], map: "flow_logs_flow_id_foreign")
+}
+
+model flow_media {
+  id         BigInt              @id @default(autoincrement()) @db.UnsignedBigInt
+  uuid       String              @unique(map: "flow_media_uuid_unique") @db.Char(36)
+  flow_id    BigInt              @db.UnsignedBigInt
+  step_id    BigInt              @db.UnsignedBigInt
+  path       String?             @db.VarChar(255)
+  location   flow_media_location @default(local)
+  metadata   String?             @db.Text
+  created_at DateTime?           @db.Timestamp(0)
+  updated_at DateTime?           @db.Timestamp(0)
+  deleted_at DateTime?           @db.Timestamp(0)
+}
+
+model flow_user_data {
+  id           BigInt    @id @default(autoincrement()) @db.UnsignedBigInt
+  contact_id   BigInt    @db.UnsignedBigInt
+  flow_id      BigInt    @db.UnsignedBigInt
+  current_step BigInt    @db.UnsignedBigInt
+  created_at   DateTime? @db.Timestamp(0)
+  updated_at   DateTime? @db.Timestamp(0)
+  flows        flows     @relation(fields: [flow_id], references: [id], onDelete: Cascade, onUpdate: Restrict, map: "flow_user_data_flow_id_foreign")
+
+  @@index([contact_id], map: "flow_user_data_contact_id_index")
+  @@index([flow_id], map: "flow_user_data_flow_id_foreign")
+}
+
+model flows {
+  id              BigInt           @id @default(autoincrement()) @db.UnsignedBigInt
+  uuid            String           @unique(map: "flows_uuid_unique") @db.Char(36)
+  organization_id BigInt           @db.UnsignedBigInt
+  name            String           @db.VarChar(255)
+  description     String?          @db.Text
+  trigger         flows_trigger?
+  keywords        String?          @db.Text
+  metadata        String?          @db.LongText
+  status          flows_status     @default(inactive)
+  created_at      DateTime?        @db.Timestamp(0)
+  updated_at      DateTime?        @db.Timestamp(0)
+  deleted_at      DateTime?        @db.Timestamp(0)
+  flow_logs       flow_logs[]
+  flow_user_data  flow_user_data[]
+}
+
+model jobs {
+  id           BigInt @id @default(autoincrement()) @db.UnsignedBigInt
+  queue        String @db.VarChar(255)
+  payload      String @db.LongText
+  attempts     Int    @db.UnsignedTinyInt
+  reserved_at  Int?   @db.UnsignedInt
+  available_at Int    @db.UnsignedInt
+  created_at   Int    @db.UnsignedInt
+}
+
+model languages {
+  id         BigInt           @id @default(autoincrement()) @db.UnsignedBigInt
+  name       String           @db.VarChar(100)
+  code       String           @db.VarChar(100)
+  status     languages_status @default(active)
+  deleted_at DateTime?        @db.Timestamp(0)
+  deleted_by Int?
+  created_at DateTime?        @db.Timestamp(0)
+  updated_at DateTime?        @db.Timestamp(0)
+}
+
+model migrations {
+  id        Int    @id @default(autoincrement()) @db.UnsignedInt
+  migration String @db.VarChar(255)
+  batch     Int
+}
+
+model modules {
+  id      BigInt @id @default(autoincrement()) @db.UnsignedBigInt
+  name    String @db.VarChar(100)
+  actions String @db.VarChar(255)
+}
+
+model notifications {
+  id         BigInt    @id @default(autoincrement()) @db.UnsignedBigInt
+  uuid       String    @unique(map: "notifications_uuid_unique") @db.Char(50)
+  user_id    BigInt    @db.UnsignedBigInt
+  title      String?
+  comment    String?   @db.Text
+  url        String?
+  seen       Boolean   @default(false)
+  created_at DateTime? @db.Timestamp(0)
+  updated_at DateTime? @db.Timestamp(0)
+}
+
+model organization_api_keys {
+  id              BigInt    @id @default(autoincrement()) @db.UnsignedBigInt
+  uuid            String    @db.Char(50)
+  organization_id BigInt    @db.UnsignedBigInt
+  token           String    @unique(map: "organization_api_keys_token_unique") @db.VarChar(255)
+  deleted_at      DateTime? @db.Timestamp(0)
+  deleted_by      BigInt?   @db.UnsignedBigInt
+  created_at      DateTime? @db.Timestamp(0)
+  updated_at      DateTime? @db.Timestamp(0)
+}
+
+model organizations {
+  id            BigInt          @id @default(autoincrement()) @db.UnsignedBigInt
+  uuid          String          @unique(map: "organizations_uuid_unique") @db.Char(50)
+  identifier    String          @db.VarChar(128)
+  name          String?         @db.VarChar(255)
+  address       String?         @db.Text
+  metadata      String?         @db.LongText
+  timezone      String?         @db.VarChar(128)
+  created_by    BigInt          @db.UnsignedBigInt
+  deleted_at    DateTime?       @db.Timestamp(0)
+  deleted_by    BigInt?         @db.UnsignedBigInt
+  created_at    DateTime?       @db.Timestamp(0)
+  updated_at    DateTime?       @db.Timestamp(0)
+  subscriptions subscriptions[]
+  team_invites  team_invites[]
+  teams         teams[]
+  templates     templates[]
+}
+
+model pages {
+  id         BigInt    @id @default(autoincrement()) @db.UnsignedBigInt
+  name       String    @db.VarChar(128)
+  content    String?   @db.Text
+  updated_at DateTime  @default(now()) @db.Timestamp(0)
+  created_at DateTime? @db.Timestamp(0)
+}
+
+/// The underlying table does not contain a valid unique identifier and can therefore currently not be handled by Prisma Client.
+model password_reset_tokens {
+  email      String    @db.VarChar(255)
+  token      String    @db.VarChar(255)
+  created_at DateTime? @db.Timestamp(0)
+
+  @@ignore
+}
+
+model payment_gateways {
+  id         BigInt    @id @default(autoincrement()) @db.UnsignedBigInt
+  name       String    @db.VarChar(128)
+  metadata   String?   @db.Text
+  is_active  Int       @default(0) @db.TinyInt
+  created_at DateTime? @db.Timestamp(0)
+  updated_at DateTime? @db.Timestamp(0)
+}
+
+model personal_access_tokens {
+  id             BigInt    @id @default(autoincrement()) @db.UnsignedBigInt
+  tokenable_type String
+  tokenable_id   BigInt    @db.UnsignedBigInt
+  name           String
+  token          String    @unique(map: "personal_access_tokens_token_unique") @db.VarChar(64)
+  abilities      String?   @db.Text
+  last_used_at   DateTime? @db.Timestamp(0)
+  expires_at     DateTime? @db.Timestamp(0)
+  created_at     DateTime? @db.Timestamp(0)
+  updated_at     DateTime? @db.Timestamp(0)
+
+  @@index([tokenable_type, tokenable_id], map: "personal_access_tokens_tokenable_type_tokenable_id_index")
+}
+
+model reviews {
+  id         BigInt    @id @default(autoincrement()) @db.UnsignedBigInt
+  name       String    @db.VarChar(255)
+  position   String?   @db.VarChar(255)
+  review     String    @db.Text
+  rating     Int       @default(0)
+  image      String?   @db.VarChar(255)
+  status     Int?
+  created_at DateTime? @db.Timestamp(0)
+  updated_at DateTime? @db.Timestamp(0)
+}
+
+model role_permissions {
+  id      BigInt @id @default(autoincrement()) @db.UnsignedBigInt
+  role_id BigInt @db.UnsignedBigInt
+  module  String @db.VarChar(128)
+  action  String @db.VarChar(128)
+  roles   roles  @relation(fields: [role_id], references: [id], onDelete: Cascade, onUpdate: Restrict, map: "role_permissions_role_id_foreign")
+
+  @@index([role_id], map: "role_permissions_role_id_foreign")
+}
+
+model roles {
+  id               BigInt             @id @default(autoincrement()) @db.UnsignedBigInt
+  uuid             String             @unique(map: "roles_uuid_unique") @db.Char(50)
+  name             String
+  created_at       DateTime?          @db.Timestamp(0)
+  updated_at       DateTime?          @db.Timestamp(0)
+  deleted_at       DateTime?          @db.Timestamp(0)
+  role_permissions role_permissions[]
+}
+
+model seeder_histories {
+  id          BigInt    @id @default(autoincrement()) @db.UnsignedBigInt
+  seeder_name String    @unique(map: "seeder_histories_seeder_name_unique") @db.VarChar(255)
+  created_at  DateTime? @db.Timestamp(0)
+  updated_at  DateTime? @db.Timestamp(0)
+}
+
+model settings {
+  key   String  @id @db.VarChar(255)
+  value String? @db.Text
+}
+
+model subscription_plans {
+  id         BigInt                    @id @default(autoincrement()) @db.UnsignedBigInt
+  uuid       String                    @unique(map: "subscription_plans_uuid_unique") @db.Char(50)
+  name       String                    @db.VarChar(100)
+  price      Decimal                   @db.Decimal(23, 2)
+  period     subscription_plans_period
+  metadata   String                    @db.Text
+  status     subscription_plans_status @default(active)
+  created_at DateTime?                 @db.Timestamp(0)
+  updated_at DateTime?                 @db.Timestamp(0)
+  deleted_at DateTime?                 @db.Timestamp(0)
+}
+
+model subscriptions {
+  id              BigInt               @id @default(autoincrement()) @db.UnsignedBigInt
+  uuid            String               @unique(map: "subscriptions_uuid_unique") @db.Char(50)
+  organization_id BigInt               @db.UnsignedBigInt
+  plan_id         BigInt?              @db.UnsignedBigInt
+  payment_details String?              @db.Text
+  start_date      DateTime?            @db.Timestamp(0)
+  valid_until     DateTime?            @db.DateTime(0)
+  status          subscriptions_status @default(trial)
+  created_at      DateTime?            @db.Timestamp(0)
+  updated_at      DateTime?            @db.Timestamp(0)
+  organizations   organizations        @relation(fields: [organization_id], references: [id], onDelete: Cascade, onUpdate: Restrict, map: "subscriptions_organization_id_foreign")
+
+  @@index([organization_id], map: "subscriptions_organization_id_foreign")
+}
+
+model tax_rates {
+  id         BigInt           @id @default(autoincrement()) @db.UnsignedBigInt
+  name       String           @db.VarChar(255)
+  percentage Decimal          @db.Decimal(5, 2)
+  status     tax_rates_status @default(active)
+  created_at DateTime?        @db.Timestamp(0)
+  updated_at DateTime?        @db.Timestamp(0)
+  deleted_at DateTime?        @db.Timestamp(0)
+}
+
+model team_invites {
+  id              BigInt        @id @default(autoincrement()) @db.UnsignedBigInt
+  organization_id BigInt        @db.UnsignedBigInt
+  email           String        @db.VarChar(128)
+  code            String        @db.VarChar(255)
+  role            String?       @db.VarChar(128)
+  invited_by      BigInt        @db.UnsignedBigInt
+  expire_at       DateTime      @default(now()) @db.Timestamp(0)
+  users           users         @relation(fields: [invited_by], references: [id], onUpdate: Restrict, map: "team_invites_invited_by_foreign")
+  organizations   organizations @relation(fields: [organization_id], references: [id], onUpdate: Restrict, map: "team_invites_organization_id_foreign")
+
+  @@index([invited_by], map: "team_invites_invited_by_foreign")
+  @@index([organization_id], map: "team_invites_organization_id_foreign")
+}
+
+model teams {
+  id                            BigInt        @id @default(autoincrement()) @db.UnsignedBigInt
+  uuid                          String        @unique(map: "teams_uuid_unique") @db.Char(50)
+  organization_id               BigInt        @db.UnsignedBigInt
+  user_id                       BigInt        @db.UnsignedBigInt
+  role                          teams_role    @default(manager)
+  status                        teams_status  @default(active)
+  created_by                    BigInt        @db.UnsignedBigInt
+  deleted_at                    DateTime?     @db.Timestamp(0)
+  deleted_by                    BigInt?       @db.UnsignedBigInt
+  created_at                    DateTime?     @db.Timestamp(0)
+  updated_at                    DateTime?     @db.Timestamp(0)
+  users_teams_created_byTousers users         @relation("teams_created_byTousers", fields: [created_by], references: [id], onUpdate: Restrict, map: "teams_created_by_foreign")
+  organizations                 organizations @relation(fields: [organization_id], references: [id], onUpdate: Restrict, map: "teams_organization_id_foreign")
+  users_teams_user_idTousers    users         @relation("teams_user_idTousers", fields: [user_id], references: [id], onUpdate: Restrict, map: "teams_user_id_foreign")
+
+  @@index([created_by], map: "teams_created_by_foreign")
+  @@index([organization_id], map: "teams_organization_id_foreign")
+  @@index([user_id], map: "teams_user_id_foreign")
+}
+
+model templates {
+  id              BigInt        @id @default(autoincrement()) @db.UnsignedBigInt
+  uuid            String        @db.Char(50)
+  organization_id BigInt        @db.UnsignedBigInt
+  meta_id         String        @db.VarChar(128)
+  name            String        @db.VarChar(128)
+  category        String        @db.VarChar(128)
+  language        String        @db.VarChar(128)
+  metadata        String        @db.Text
+  status          String        @db.VarChar(128)
+  created_by      BigInt        @db.UnsignedBigInt
+  created_at      DateTime?     @db.Timestamp(0)
+  updated_at      DateTime?     @db.Timestamp(0)
+  deleted_at      DateTime?     @db.Timestamp(0)
+  users           users         @relation(fields: [created_by], references: [id], onUpdate: Restrict, map: "templates_created_by_foreign")
+  organizations   organizations @relation(fields: [organization_id], references: [id], onDelete: Cascade, onUpdate: Restrict, map: "templates_organization_id_foreign")
+
+  @@index([created_by], map: "templates_created_by_foreign")
+  @@index([organization_id], map: "templates_organization_id_foreign")
+}
+
+model ticket_categories {
+  id      BigInt    @id @default(autoincrement()) @db.UnsignedBigInt
+  name    String    @db.VarChar(255)
+  tickets tickets[]
+}
+
+model ticket_comments {
+  id         BigInt    @id @default(autoincrement()) @db.UnsignedBigInt
+  ticket_id  BigInt    @db.UnsignedBigInt
+  user_id    BigInt    @db.UnsignedBigInt
+  message    String    @db.VarChar(1024)
+  seen       Boolean   @default(false)
+  created_at DateTime? @db.Timestamp(0)
+  updated_at DateTime? @db.Timestamp(0)
+  tickets    tickets   @relation(fields: [ticket_id], references: [id], onDelete: Cascade, onUpdate: Restrict, map: "ticket_comments_ticket_id_foreign")
+  users      users     @relation(fields: [user_id], references: [id], onDelete: Cascade, onUpdate: Restrict, map: "ticket_comments_user_id_foreign")
+
+  @@index([ticket_id], map: "ticket_comments_ticket_id_foreign")
+  @@index([user_id], map: "ticket_comments_user_id_foreign")
+}
+
+model tickets {
+  id                               BigInt            @id @default(autoincrement()) @db.UnsignedBigInt
+  uuid                             String            @db.Char(50)
+  reference                        String            @db.VarChar(128)
+  organization_id                  BigInt?           @db.UnsignedBigInt
+  user_id                          BigInt            @db.UnsignedBigInt
+  category_id                      BigInt            @db.UnsignedBigInt
+  subject                          String            @db.VarChar(1024)
+  message                          String            @db.VarChar(1024)
+  priority                         tickets_priority?
+  assigned_to                      BigInt?           @db.UnsignedBigInt
+  status                           tickets_status    @default(pending)
+  closed_by                        BigInt?           @db.UnsignedBigInt
+  created_at                       DateTime?         @db.Timestamp(0)
+  updated_at                       DateTime?         @db.Timestamp(0)
+  ticket_comments                  ticket_comments[]
+  users_tickets_assigned_toTousers users?            @relation("tickets_assigned_toTousers", fields: [assigned_to], references: [id], onDelete: Restrict, onUpdate: Restrict, map: "tickets_assigned_to_foreign")
+  ticket_categories                ticket_categories @relation(fields: [category_id], references: [id], onUpdate: Restrict, map: "tickets_category_id_foreign")
+  users_tickets_closed_byTousers   users?            @relation("tickets_closed_byTousers", fields: [closed_by], references: [id], onDelete: Restrict, onUpdate: Restrict, map: "tickets_closed_by_foreign")
+  users_tickets_user_idTousers     users             @relation("tickets_user_idTousers", fields: [user_id], references: [id], onUpdate: Restrict, map: "tickets_user_id_foreign")
+
+  @@index([assigned_to], map: "tickets_assigned_to_foreign")
+  @@index([category_id], map: "tickets_category_id_foreign")
+  @@index([closed_by], map: "tickets_closed_by_foreign")
+  @@index([user_id], map: "tickets_user_id_foreign")
+}
+
+model users {
+  id                                 BigInt            @id @default(autoincrement()) @db.UnsignedBigInt
+  first_name                         String            @db.VarChar(128)
+  last_name                          String?           @db.VarChar(128)
+  email                              String
+  facebook_id                        String?           @unique(map: "users_facebook_id_unique") @db.VarChar(255)
+  avatar                             String?
+  role                               String            @default("user")
+  phone                              String?
+  address                            String?           @db.Text
+  email_verified_at                  DateTime?         @db.Timestamp(0)
+  password                           String?           @db.VarChar(255)
+  tfa_secret                         String?           @db.VarChar(255)
+  tfa                                Int               @default(0) @db.TinyInt
+  status                             Int               @default(1)
+  meta                               String?           @db.Text
+  plan                               String?           @db.Text
+  plan_id                            BigInt?           @db.UnsignedBigInt
+  will_expire                        DateTime?         @db.Date
+  remember_token                     String?           @db.VarChar(100)
+  created_at                         DateTime?         @db.Timestamp(0)
+  updated_at                         DateTime?         @db.Timestamp(0)
+  deleted_at                         DateTime?         @db.Timestamp(0)
+  team_invites                       team_invites[]
+  teams_teams_created_byTousers      teams[]           @relation("teams_created_byTousers")
+  teams_teams_user_idTousers         teams[]           @relation("teams_user_idTousers")
+  templates                          templates[]
+  ticket_comments                    ticket_comments[]
+  tickets_tickets_assigned_toTousers tickets[]         @relation("tickets_assigned_toTousers")
+  tickets_tickets_closed_byTousers   tickets[]         @relation("tickets_closed_byTousers")
+  tickets_tickets_user_idTousers     tickets[]         @relation("tickets_user_idTousers")
+
+  @@unique([email, deleted_at], map: "users_email_deleted_at_unique")
+}
+
+model webhook_events {
+  id         BigInt    @id @default(autoincrement()) @db.UnsignedBigInt
+  webhook_id BigInt    @db.UnsignedBigInt
+  event      String    @db.VarChar(255)
+  created_at DateTime? @db.Timestamp(0)
+  updated_at DateTime? @db.Timestamp(0)
+  webhooks   webhooks  @relation(fields: [webhook_id], references: [id], onDelete: Cascade, onUpdate: Restrict, map: "webhook_events_webhook_id_foreign")
+
+  @@index([webhook_id], map: "webhook_events_webhook_id_foreign")
+}
+
+model webhooks {
+  id              BigInt           @id @default(autoincrement()) @db.UnsignedBigInt
+  uuid            String           @unique(map: "webhooks_uuid_unique") @db.Char(50)
+  organization_id Int
+  url             String           @db.VarChar(255)
+  created_at      DateTime?        @db.Timestamp(0)
+  updated_at      DateTime?        @db.Timestamp(0)
+  webhook_events  webhook_events[]
+
+  @@unique([organization_id, url], map: "webhooks_organization_id_url_unique")
+}
+
+enum billing_transactions_entity_type {
+  payment
+  invoice
+  credit
+  debit
+}
+
+enum chat_media_location {
+  local
+  amazon
+}
+
+enum languages_status {
+  active
+  inactive
+}
+
+enum tax_rates_status {
+  active
+  inactive
+}
+
+enum subscription_plans_period {
+  monthly
+  yearly
+}
+
+enum teams_role {
+  owner
+  manager
+  agent
+}
+
+enum campaign_logs_status {
+  pending
+  success
+  failed
+  ongoing
+}
+
+enum flow_media_location {
+  local
+  amazon
+}
+
+enum flows_trigger {
+  new_contact
+  keywords
+}
+
+enum teams_status {
+  active
+  suspended
+}
+
+enum chats_type {
+  inbound
+  outbound
+}
+
+enum email_logs_status {
+  queued
+  sent
+  failed
+}
+
+enum subscription_plans_status {
+  active
+  inactive
+  deleted
+}
+
+enum chats_archive_2024_type {
+  inbound
+  outbound
+}
+
+enum coupons_status {
+  active
+  inactive
+}
+
+enum subscriptions_status {
+  trial
+  active
+}
+
+enum billing_invoices_tax_type {
+  inclusive
+  exclusive
+}
+
+enum flows_status {
+  active
+  inactive
+}
+
+enum tickets_priority {
+  critical
+  high
+  medium
+  low
+}
+
+enum tickets_status {
+  open
+  pending
+  resolved
+  closed
+}
